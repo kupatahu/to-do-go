@@ -5,12 +5,13 @@ import (
 	"net/http"
 
 	"github.com/kupatahu/to-do-go/entity"
+	"github.com/kupatahu/to-do-go/httperr"
 )
 
 type Usecase interface {
 	Get() ([]*entity.Todo, error)
 	Create(todo *entity.Todo) (*entity.Todo, error)
-	Update(todo *entity.Todo) (*entity.Todo, error)
+	Update(todo *entity.Todo) (*entity.Todo, httperr.HttpErr)
 }
 
 type handler struct {
@@ -67,26 +68,23 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) Update(w http.ResponseWriter, r *http.Request) {
 	var todo *entity.Todo
-	err := json.NewDecoder(r.Body).Decode(&todo)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(&todo)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	todo, err = h.usecase.Update(todo)
+	todo, httperr := h.usecase.Update(todo)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if httperr != nil {
+		http.Error(w, httperr.Error(), httperr.Code())
 		return
 	}
 
-	todoJson, err := json.Marshal(todo)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	todoJson, _ := json.Marshal(todo)
 
 	w.Write(todoJson)
 }

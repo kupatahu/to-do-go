@@ -2,11 +2,11 @@ package todo
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 
 	"github.com/google/uuid"
 	"github.com/kupatahu/to-do-go/entity"
+	"github.com/kupatahu/to-do-go/httperr"
 	"github.com/sdomino/scribble"
 )
 
@@ -54,15 +54,16 @@ func (r *repo) Create(todo *entity.Todo) (*entity.Todo, error) {
 	return todo, nil
 }
 
-func (r *repo) Update(todo *entity.Todo) (*entity.Todo, error) {
+func (r *repo) Update(todo *entity.Todo) (*entity.Todo, httperr.HttpErr) {
 	err := r.db.Write("todo", todo.Id, todo)
 
 	if err != nil {
 		if err.Error() == "missing resource - unable to save record" {
-			err = errors.New("not found")
+			httperr := httperr.NewNotFound("todo "+todo.Id+"not exist", err)
+			return nil, httperr
 		}
 
-		return nil, err
+		return nil, httperr.NewInternalServer("", err)
 	}
 
 	return todo, nil

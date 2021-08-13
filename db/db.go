@@ -7,7 +7,7 @@ import (
 )
 
 func Open() *scribble.Driver {
-	db, err := scribble.New("./db/data/", nil)
+	db, err := scribble.New("./.data", nil)
 
 	if err != nil {
 		log.Fatal(err)

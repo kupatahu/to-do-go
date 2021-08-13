@@ -1,11 +1,14 @@
 package todo
 
-import "github.com/kupatahu/to-do-go/entity"
+import (
+	"github.com/kupatahu/to-do-go/entity"
+	"github.com/kupatahu/to-do-go/httperr"
+)
 
 type Repo interface {
 	Get() ([]*entity.Todo, error)
 	Create(todo *entity.Todo) (*entity.Todo, error)
-	Update(todo *entity.Todo) (*entity.Todo, error)
+	Update(todo *entity.Todo) (*entity.Todo, httperr.HttpErr)
 }
 
 type usecase struct {
@@ -24,6 +27,6 @@ func (u *usecase) Create(todo *entity.Todo) (*entity.Todo, error) {
 	return u.repo.Create(todo)
 }
 
-func (u *usecase) Update(todo *entity.Todo) (*entity.Todo, error) {
+func (u *usecase) Update(todo *entity.Todo) (*entity.Todo, httperr.HttpErr) {
 	return u.repo.Update(todo)
 }
